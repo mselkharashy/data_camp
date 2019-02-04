@@ -31,6 +31,14 @@ There is two types of predictive models
 
 ```{r results='hold'}
 library(tidyverse)
+library(mlbench)
+library(caret)
+library(C50)
+library(gbm)
+library(ranger)
+
+data(churn)
+data(Sonar)
 ```
 
 ```{r}
@@ -70,10 +78,6 @@ Test rows are randomly assigned to N folds, each fold represent a different test
 
 **Caret Package** enable us to automate the process of cross-validation as well as it provide a standard interface to apply handrads of different models using the method argument in the train function.
 
-```{r results='hold'}
-library(caret)
-```
-
 ```{r}
 model <- train(
   price ~ ., diamonds,
@@ -100,11 +104,6 @@ Repeated cross-validation gives a better estimate of the test-set error. This ta
 ## Classification (Logistic Regression)
 
 Logistic regression model is used to predict a categorical (qualitative) target variable (a.k.a churn Yes/No)
-
-```{r results='hold'}
-library(mlbench)
-data(Sonar)
-```
 
 ### Confusion Metrix 
 
@@ -192,6 +191,7 @@ set.seed(42)
 model <- train(Class~.,
  data = Sonar,
  method = "ranger",
+ importance = 'impurity',
  #tuneLength = 3,
  trControl = myControl #trainControl(method = "cv", number = 5, verboseIter = FALSE)
  )
@@ -368,8 +368,6 @@ X_small <- X[ , setdiff(all_cols, remove_cols)]
 Using `resamples()` to compare multiple models and select (or ensemble) the nest one(s). To compare apple to apple, we need to specify the cross validation folds as well as the trainControl object.
 
 ```{r}
-library(C50)
-data(churn)
 
 # Create train/test indexes
 set.seed(42)
@@ -423,7 +421,7 @@ churnTrain$churn <- factor(churnTrain$churn, levels = c("no", "yes"))
 model_rf <- train(
  churn ~ ., churnTrain,
  metric = "ROC",
- method = "ranger",
+ method = "rf",
  trControl = myControl
 )
 
@@ -503,5 +501,11 @@ dotplot(resamps, metric = "ROC")
 ```
 
 Random Forest model is bringing the best results. It has the hieghst average AUC as well as the lowest standard devision.
+
+### Feature Importance 
+```{r}
+(varImp(model_rf))
+
+```
 
 ***
